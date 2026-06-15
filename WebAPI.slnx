@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/方案項目/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="WebAPI.BackEnd/WebAPI.BackEnd.csproj" />
   <Project Path="WebAPI.FrontEnd/WebAPI.FrontEnd.esproj">
     <Build />
