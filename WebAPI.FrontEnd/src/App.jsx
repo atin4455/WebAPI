@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 
-// 🌟 這裡精準對接到你剛蓋好的後端 SERVER 網址
+// 🌟 請確保這裡的 Port 號碼 (7112) 與你 .NET 後端啟動時的 Port 完全一致
 const API_URL = 'https://localhost:7112/api/todo';
 
 function App() {
     const [todos, setTodos] = useState([]);
     const [newTodoTitle, setNewTodoTitle] = useState('');
 
-    // 1. 網頁一打開，立刻發送 GET 請求去後端撈資料 (對應 GetTodos)
+    // 1. 【查】 撈取全部
     useEffect(() => {
         const fetchTodos = async () => {
             try {
@@ -16,13 +16,14 @@ function App() {
                 const data = await response.json();
                 setTodos(data);
             } catch (error) {
-                console.error('撈取資料失敗：', error);
+                console.error('撈取失敗：', error);
             }
         };
+
         fetchTodos();
     }, []);
 
-    // 2. 按下新增按鈕，發送 POST 請求去後端生成物件 (對應 PostTodo)
+    // 2. 【增】 新增事項
     const handleAddTodo = async (e) => {
         e.preventDefault();
         if (!newTodoTitle.trim()) return;
@@ -36,17 +37,53 @@ function App() {
 
             if (response.ok) {
                 const createdTodo = await response.json();
-                setTodos([...todos, createdTodo]); // 把後端生成完、帶有新 ID 的物件塞進畫面
-                setNewTodoTitle(''); // 清空輸入框
+                setTodos([...todos, createdTodo]);
+                setNewTodoTitle('');
             }
         } catch (error) {
-            console.error('連線後端發生錯誤：', error);
+            console.error('新增失敗：', error);
+        }
+    };
+
+    // 3. 【改】 切換完成狀態 (PUT)
+    const handleToggleComplete = async (todo) => {
+        const updatedTodo = { ...todo, isCompleted: !todo.isCompleted };
+
+        try {
+            // 🌟 注意：RESTful 規範，修改特定 ID 必須在網址後加上 /{id}
+            const response = await fetch(`${API_URL}/${todo.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedTodo),
+            });
+
+            if (response.ok) {
+                setTodos(todos.map(t => t.id === todo.id ? updatedTodo : t));
+            }
+        } catch (error) {
+            console.error('修改失敗：', error);
+        }
+    };
+
+    // 4. 【刪】 刪除事項 (DELETE)
+    const handleDeleteTodo = async (id) => {
+        try {
+            // 🌟 注意：刪除特定 ID 必須在網址後加上 /{id}
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setTodos(todos.filter(t => t.id !== id));
+            }
+        } catch (error) {
+            console.error('刪除失敗：', error);
         }
     };
 
     return (
         <div style={{ padding: '20px', maxWidth: '500px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-            <h1>Todo List (React + .NET)</h1>
+            <h1>Todo List 完整 CRUD 版 🔥</h1>
 
             <form onSubmit={handleAddTodo} style={{ marginBottom: '20px' }}>
                 <input
@@ -62,10 +99,36 @@ function App() {
             {todos.length === 0 ? (
                 <p>目前沒有任何待辦事項 😎</p>
             ) : (
-                <ul style={{ paddingLeft: '20px' }}>
+                <ul style={{ paddingLeft: '0', listStyle: 'none' }}>
                     {todos.map((todo) => (
-                        <li key={todo.id} style={{ margin: '10px 0' }}>
-                            {todo.title}
+                        <li key={todo.id} style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '10px',
+                            borderBottom: '1px solid #eee'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={todo.isCompleted}
+                                    onChange={() => handleToggleComplete(todo)}
+                                    style={{ marginRight: '10px', width: '18px', height: '18px', cursor: 'pointer' }}
+                                />
+                                <span style={{
+                                    textDecoration: todo.isCompleted ? 'line-through' : 'none',
+                                    color: todo.isCompleted ? '#aaa' : '#000'
+                                }}>
+                                    {todo.title}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={() => handleDeleteTodo(todo.id)}
+                                style={{ backgroundColor: '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', borderRadius: '4px' }}
+                            >
+                                刪除
+                            </button>
                         </li>
                     ))}
                 </ul>

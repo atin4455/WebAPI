@@ -42,4 +42,55 @@ public class TodoController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(todo); // 回傳成功新增的物件
     }
+
+    // 3. 【PUT】 修改待辦事項的狀態 (對應前端勾選完成/未完成)
+    // 網址：PUT https://localhost:7112/api/todo/{id}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutTodo(int id, Todo todo)
+    {
+        // 防呆：如果網址傳進來的 id 跟內容包的 id 對不起來，就報錯
+        if (id != todo.Id)
+        {
+            return BadRequest();
+        }
+
+        // 告訴 Entity Framework 這個物件已經被修改了
+        _context.Entry(todo).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // 如果剛好資料在記憶體裡消失了，就回傳找不到
+            if (!_context.Todos.Any(e => e.Id == id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent(); // 回傳 204 No Content，代表修改成功但不用吐回大資料
+    }
+
+    // 4. 【DELETE】 刪除一筆待辦事項
+    // 網址：DELETE https://localhost:7112/api/todo/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTodo(int id)
+    {
+        var todo = await _context.Todos.FindAsync(id);
+        if (todo == null)
+        {
+            return NotFound();
+        }
+
+        _context.Todos.Remove(todo);
+        await _context.SaveChangesAsync();
+
+        return NoContent(); // 刪除成功，回傳 204
+    }
 }
