@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "新增設定檔",
+    "Projects": [
+      {
+        "Path": "WebAPI.BackEnd\\WebAPI.BackEnd.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "WebAPI.FrontEnd\\WebAPI.FrontEnd.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
