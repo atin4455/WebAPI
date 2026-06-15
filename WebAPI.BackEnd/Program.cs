@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // 這是前端 Vite 的預設 Port
+        policy.WithOrigins("http://localhost:61780") // 這是前端 Vite 的預設 Port
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
