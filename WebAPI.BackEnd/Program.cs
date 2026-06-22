@@ -1,11 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using WebAPI.BackEnd.Data;
+using WebAPI.BackEnd.Repositories;
+using WebAPI.BackEnd.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. 註冊 InMemory 資料庫
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("TodoListDb"));
+
+builder.Services.AddScoped<ITodoRepository, TodoRepository>();
+builder.Services.AddScoped<ITodoService, TodoService>();
 
 // 2. 開放 CORS 權限給前端 React
 builder.Services.AddCors(options =>
