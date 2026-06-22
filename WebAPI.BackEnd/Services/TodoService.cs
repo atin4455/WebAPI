@@ -12,17 +12,17 @@ namespace WebAPI.BackEnd.Services
         public TodoService(ITodoRepository todoRepository)
         {
             _todoRepository = todoRepository;
-
-            // 💡 預設塞一筆資料的邏輯搬來這裡
-            if (!_todoRepository.Any())
-            {
-                // 因為是建構子，這裡用同步處理或封裝
-                _todoRepository.AddAsync(new Todo { Title = "學習 React + .NET WebAPI", IsCompleted = false }).Wait();
-            }
         }
 
         public async Task<IEnumerable<TodoDto>> GetTodosAsync()
         {
+            // 1. 檢查 Repository 有沒有資料（如果 Repository 有 AnyAsync 更好，沒有就先用同步的 Any）
+            if (!_todoRepository.Any())
+            {
+                // 💡 關鍵就在這裡：把原本的 .Wait() 刪掉，在最前面加上 await！
+                await _todoRepository.AddAsync(new Todo { Title = "學習 React + .NET WebAPI", IsCompleted = false });
+            }
+
             var todos = await _todoRepository.GetAllAsync();
             // 將 Entity 轉成 DTO
             return todos.Select(t => new TodoDto
